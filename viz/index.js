@@ -122,6 +122,7 @@ async function initializeMap() {
                 "background-opacity": 0
             }
         });
+        map.getCanvas().style.cursor = "none";
         // Fetch OSM intersections/roads for navigation
         await fetchOSMData(map.getCenter().toArray());
         setTimeout(() => {
