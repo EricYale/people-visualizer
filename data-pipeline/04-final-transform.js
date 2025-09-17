@@ -36,3 +36,7 @@ for (const worksheet of worksheetsInput) {
 }
 
 fs.writeFileSync("../data/worksheets_final.json", JSON.stringify(worksheets, null, 2), "utf8");
+
+// Also write to ../viz/data.js for web consumption
+const jsData = `window.WORKSHEETS_DATA = ${JSON.stringify(worksheets, null, 2)};\n`;
+fs.writeFileSync("../viz/data.js", jsData, "utf8");

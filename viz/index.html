@@ -5,9 +5,16 @@
     <link href="index.css" rel="stylesheet">
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
+    <script src="utils.js"></script>
+    <script src="constants.js"></script>
+    <script src="data.js"></script>
+    <!-- Pathfinding and OSM libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/javascript-astar/0.4.1/astar.min.js"></script>
 </head>
 <body>
+    <canvas id="canvas"></canvas>
     <div id="map"></div>
+    <div id="time-overlay"></div>
     <script src="index.js"></script>
 </body>
 </html>
