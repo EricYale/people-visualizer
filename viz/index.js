@@ -2,7 +2,7 @@ const MINUTES_TIME_SKIP = 0.05;
 const TIMEOUT = 25;
 const FUDGE_FACTOR = 0.0003;
 const FUDGE_SPEED = 0.03;
-const NUM_DOTS = 80;
+const NUM_DOTS = 100;
 const STEP_SIZE = 0.0001;
 const SHOW_DOTS_AT_RESIDENTIAL = true;
 
@@ -79,7 +79,7 @@ function advanceTimer() {
         timer.hour++;
     }
     if (timer.hour >= 24) {
-        timer.hour = 8;
+        timer.hour = 0;
         timer.day++;
         atMidnight();
     }
@@ -114,6 +114,14 @@ async function initializeMap() {
                 bearing: window.innerWidth > window.innerHeight ? -60 : 30
             }
         );
+        map.addLayer({
+            id: "day-night",
+            type: "background",
+            paint: {
+                "background-color": "#000000",
+                "background-opacity": 0
+            }
+        });
         // Fetch OSM intersections/roads for navigation
         await fetchOSMData(map.getCenter().toArray());
         setTimeout(() => {
@@ -257,7 +265,7 @@ function isAtResidential(dot) {
 
 function getColorForDot(dot) {
     // If at residential, show dark orange
-    if (isAtResidential(dot)) return "#471b55";
+    if (isAtResidential(dot)) return "#834296ff";
     if(dot.path.length === 0) return "#ff00d0"; // idle
     return "#ff0062"; // moving
 }
@@ -279,6 +287,8 @@ function render() {
         ctx.arc(pixel.x, pixel.y, 5, 0, 2 * Math.PI);
         ctx.fill();
     });
+
+    map.setPaintProperty("day-night", "background-opacity", Math.min(1, 0.6 * Math.cos((timer.hour + timer.minute / 60) / 24 * 2 * Math.PI)));
 }
 
 initializeMap();
