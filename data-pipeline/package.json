@@ -1,0 +1,13 @@
+{
+  "name": "people-visualizer-data-pipeline",
+  "version": "1.0.0",
+  "author": "Yoonicode",
+  "license": "UNLICENSED",
+  "description": "",
+  "type": "module",
+  "dependencies": {
+    "@googlemaps/google-maps-services-js": "github:googlemaps/google-maps-services-js",
+    "@googlemaps/places": "^2.1.0",
+    "dotenv": "^17.2.2"
+  }
+}
