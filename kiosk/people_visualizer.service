@@ -1,0 +1,13 @@
+[Unit]
+Description=3340 People Visualizer
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=student334
+WorkingDirectory=/home/student334/people-visualizer/kiosk
+ExecStart=/home/student334/people-visualizer/kiosk/start.sh
+
+[Install]
+WantedBy=multi-user.target
