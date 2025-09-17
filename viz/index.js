@@ -1,13 +1,14 @@
-const MINUTES_TIME_SKIP = 2;
-const TIMEOUT = 50;
-const FUDGE_FACTOR = 0;
-const NUM_DOTS = 50;
-const STEP_SIZE = 0.0002;
+const MINUTES_TIME_SKIP = 0.1;
+const TIMEOUT = 25;
+const FUDGE_FACTOR = 0.0003;
+const FUDGE_SPEED = 0.03;
+const NUM_DOTS = 200;
+const STEP_SIZE = 0.0001;
 
 let timer = {
     day: 0,
     hour: 8,
-    minute: 0
+    minute: 50
 };
 
 let timerInterval = null;
@@ -66,7 +67,7 @@ async function fetchOSMData(center, blockRadius = 0.005) {
 function updateTimeOverlay() {
     const overlay = document.getElementById("time-overlay");
     const day = DAYS[timer.day];
-    const time = pad2(timer.hour) + ":" + pad2(timer.minute);
+    const time = pad2(timer.hour) + ":" + pad2(Math.floor(timer.minute));
     overlay.textContent = `${day} ${time}`;
 }
 
@@ -76,7 +77,7 @@ function advanceTimer() {
         timer.minute = 0;
         timer.hour++;
     }
-    if (timer.hour >= 19) {
+    if (timer.hour >= 24) {
         timer.hour = 8;
         timer.day++;
         atMidnight();
@@ -141,8 +142,8 @@ function initializeDots() {
             path: [],
             residential,
             fudgeCoords: {
-                lat: (Math.random() - 0.5) * FUDGE_FACTOR,
-                lng: (Math.random() - 0.5) * FUDGE_FACTOR
+                lat: 0,
+                lng: 0
             },
         }
     });
@@ -179,10 +180,7 @@ function update() {
         moveDot(dot);
 
         // Step 3: change point's fudge factor
-        const newFudgeLat = (Math.random() - 0.5) * FUDGE_FACTOR;
-        const newFudgeLng = (Math.random() - 0.5) * FUDGE_FACTOR;
-        dot.fudgeCoords.lat = (dot.fudgeCoords.lat + newFudgeLat) / 2;
-        dot.fudgeCoords.lng = (dot.fudgeCoords.lng + newFudgeLng) / 2;
+        fudgeDot(dot);
     }
 }
 
@@ -217,6 +215,40 @@ function moveDot(dot) {
     dot.lat += Math.sin(angle) * STEP_SIZE;
 }
 
+function fudgeDot(dot) {
+    if (FUDGE_FACTOR === 0 || FUDGE_SPEED === 0) {
+        dot.fudgeCoords.lat = 0;
+        dot.fudgeCoords.lng = 0;
+        return;
+    }
+    // FUDGE_SPEED controls how fast the fudge moves (fraction of FUDGE_FACTOR per tick)
+    const FUDGE_STEP = FUDGE_FACTOR * FUDGE_SPEED;
+
+    const angle = Math.random() * 2 * Math.PI;
+    const dLat = Math.sin(angle) * FUDGE_STEP;
+    const dLng = Math.cos(angle) * FUDGE_STEP;
+
+    let newLat = dot.fudgeCoords.lat + dLat;
+    let newLng = dot.fudgeCoords.lng + dLng;
+
+    const dist = Math.sqrt(newLat * newLat + newLng * newLng);
+    if (dist > FUDGE_FACTOR) {
+        newLat = (newLat / dist) * FUDGE_FACTOR;
+        newLng = (newLng / dist) * FUDGE_FACTOR;
+    }
+
+    dot.fudgeCoords.lat = newLat;
+    dot.fudgeCoords.lng = newLng;
+}
+
+function isAtResidential(dot) {
+    const [resLng, resLat] = dot.residential;
+    const dx = resLng - dot.lng;
+    const dy = resLat - dot.lat;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    return distance < 0.0008;
+}
+
 function render() {
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
@@ -228,6 +260,7 @@ function render() {
     ctx.fillStyle = "#fcb103";
     dots.forEach(dot => {
         if (dot.lng == null || dot.lat == null) return;
+        if(isAtResidential(dot)) return;
         const pixel = map.project([dot.lng + dot.fudgeCoords.lng, dot.lat + dot.fudgeCoords.lat]);
         ctx.beginPath();
         ctx.arc(pixel.x, pixel.y, 5, 0, 2 * Math.PI);
