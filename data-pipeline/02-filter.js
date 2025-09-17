@@ -7,14 +7,13 @@ const outputFile = "../data/worksheet_ct_filtered.json";
 
 function filterRows() {
     const input = JSON.parse(fs.readFileSync(inputFile, "utf8"));
-    // input: [ [ [ {l, t, d}, ... ] ], ... ]
     const output = [];
     for (const worksheet of input) {
         let total = 0;
         for (const arr of worksheet) {
             total += arr.length;
         }
-        if (total >= 3 && total <= 7) {
+        if (total >= 5 && total <= 7) {
             output.push(worksheet);
         }
     }

@@ -1,9 +1,10 @@
-const MINUTES_TIME_SKIP = 0.1;
+const MINUTES_TIME_SKIP = 0.05;
 const TIMEOUT = 25;
 const FUDGE_FACTOR = 0.0003;
 const FUDGE_SPEED = 0.03;
-const NUM_DOTS = 200;
+const NUM_DOTS = 80;
 const STEP_SIZE = 0.0001;
+const SHOW_DOTS_AT_RESIDENTIAL = true;
 
 let timer = {
     day: 0,
@@ -22,7 +23,7 @@ const osmIntersectionsById = {};
 
 
 // Fetch OSM intersections and roads for navigation using Overpass API via fetch
-async function fetchOSMData(center, blockRadius = 0.005) {
+async function fetchOSMData(center, blockRadius = 0.02) {
     // Center the OSM query within ~5 city blocks of the map's center
     // const [lng, lat] = center;
     // const minLat = lat - blockRadius;
@@ -53,7 +54,7 @@ async function fetchOSMData(center, blockRadius = 0.005) {
     //     throw new Error("Overpass API request failed: " + response.status);
     // }
     // const result = await response.json();
-    
+    // console.log(JSON.stringify(result));
     result = OVERPASS_DATA;
 
     const nodes = (result.elements || []).filter(e => e.type === "node");
@@ -103,12 +104,16 @@ async function initializeMap() {
         container: "map",
         style: "mapbox://styles/ericyoon/cmfnfi6hy001m01ry3icabmla",
         projection: "mercator",
-        zoom: 15.5,
-        center: [-72.9278636, 41.3105904],
-        bearing: -60
     });
-    
     map.on("style.load", async () => {
+        map.fitBounds(
+            [
+                [-72.9339338, 41.308873],
+                [-72.9189799,41.3195399]
+            ], {
+                bearing: window.innerWidth > window.innerHeight ? -60 : 30
+            }
+        );
         // Fetch OSM intersections/roads for navigation
         await fetchOSMData(map.getCenter().toArray());
         setTimeout(() => {
@@ -145,6 +150,7 @@ function initializeDots() {
                 lat: 0,
                 lng: 0
             },
+            latenessFactor: Math.random() * 5,
         }
     });
     update();
@@ -170,7 +176,7 @@ function update() {
         } else {
             const nextClassTime = timeStrToMinutes(nextClass.t);
             const currentTime = timer.hour * 60 + timer.minute;
-            if(nextClassTime <= currentTime) {
+            if(nextClassTime + dot.latenessFactor <= currentTime) {
                 dot.classesForToday.shift();
                 navigateDotTo(dot, ...nextClass.coords);
             }
@@ -249,6 +255,13 @@ function isAtResidential(dot) {
     return distance < 0.0008;
 }
 
+function getColorForDot(dot) {
+    // If at residential, show dark orange
+    if (isAtResidential(dot)) return "#471b55";
+    if(dot.path.length === 0) return "#ff00d0"; // idle
+    return "#ff0062"; // moving
+}
+
 function render() {
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
@@ -257,10 +270,10 @@ function render() {
     canvas.height = mapDiv.offsetHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = "#fcb103";
     dots.forEach(dot => {
+        ctx.fillStyle = getColorForDot(dot);
         if (dot.lng == null || dot.lat == null) return;
-        if(isAtResidential(dot)) return;
+        if(isAtResidential(dot) && !SHOW_DOTS_AT_RESIDENTIAL) return;
         const pixel = map.project([dot.lng + dot.fudgeCoords.lng, dot.lat + dot.fudgeCoords.lat]);
         ctx.beginPath();
         ctx.arc(pixel.x, pixel.y, 5, 0, 2 * Math.PI);
