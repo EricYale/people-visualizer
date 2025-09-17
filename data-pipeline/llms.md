@@ -1,5 +1,5 @@
 
-# Data Pipeline Technical Description (JSON-based)
+# Data Pipeline Technical Description - Notes for LLMs
 
 ## Stage 0: CSV to JSON (`00-csv-to-json.js`)
 - Reads `../data/ct_worksheets.csv` which contains worksheet IDs and comma-separated CRNs.

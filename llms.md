@@ -19,6 +19,4 @@ Dots on the visualization should move according to the following rules:
 - During class, a dot should navigate to its classroom. Assume a class lasts until the next one starts, unless it's the last one of the day.
 - Before their first class and after their last class each day, a dot should navigate to the one of the `RESIDENTIAL_COLLEGES` specified in `constants.js`. This is to simulate them sleeping/eating.
 - To enable human-like movement, dots use roads. To achieve this, when they leave a classroom/residential college, they will linearly interpolate to the nearest intersection. Then, they will continuously navigate to intersections on the path, until they get to the closest intersection to their destination classroom/residential college. Then they will linearly interpolate to the building.
-    - Pathfinding will be done with `javascript-astar` library, which can be retrieved with this CDN url: `https://cdnjs.cloudflare.com/ajax/libs/javascript-astar/0.4.1/astar.min.js`
-    - Intersections will be obtained using the OpenStreetMap API. Use `osm-api-js` library
-        - Assume this library is called from a secure environment. Use "basicAuth" to login to OSM API.
+`

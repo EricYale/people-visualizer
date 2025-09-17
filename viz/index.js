@@ -1,10 +1,10 @@
-const MINUTES_TIME_SKIP = 0.05;
-const TIMEOUT = 25;
-const FUDGE_FACTOR = 0.0003;
-const FUDGE_SPEED = 0.03;
-const NUM_DOTS = 100;
-const STEP_SIZE = 0.0001;
-const SHOW_DOTS_AT_RESIDENTIAL = true;
+const MINUTES_TIME_SKIP = 0.05; // How fast the simulation time advances per tick
+const TIMEOUT = 25; // The time between each tick in milliseconds
+const FUDGE_FACTOR = 0.0003; // Maximum radius for dots to "jitter"
+const FUDGE_SPEED = 0.03; // Speed of the jitter
+const NUM_DOTS = 100; // Number of dots to simulate
+const STEP_SIZE = 0.0001; // How far a dot moves in one tick
+const SHOW_DOTS_AT_RESIDENTIAL = true; // Whether to show dots when they are at their residential colleges
 
 let timer = {
     day: 0,
@@ -23,6 +23,7 @@ const osmIntersectionsById = {};
 
 
 // Fetch OSM intersections and roads for navigation using Overpass API via fetch
+// (Comment this out to generate fresh data; data is cached in new-haven.js)
 async function fetchOSMData(center, blockRadius = 0.02) {
     // Center the OSM query within ~5 city blocks of the map's center
     // const [lng, lat] = center;
@@ -215,8 +216,6 @@ function moveDot(dot) {
     const nextNode = dot.path[0];
     if (!nextNode) return;
 
-    // Remove trail logic
-
     const dx = nextNode.lng - dot.lng;
     const dy = nextNode.lat - dot.lat;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -239,7 +238,6 @@ function fudgeDot(dot) {
         dot.fudgeCoords.lng = 0;
         return;
     }
-    // FUDGE_SPEED controls how fast the fudge moves (fraction of FUDGE_FACTOR per tick)
     const FUDGE_STEP = FUDGE_FACTOR * FUDGE_SPEED;
 
     const angle = Math.random() * 2 * Math.PI;
