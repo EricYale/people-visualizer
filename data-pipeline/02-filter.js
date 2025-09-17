@@ -1,25 +1,24 @@
+
 import fs from "fs";
 
-const inputFile = "../data/worksheet_locations.csv";
-const outputFile = "../data/worksheet_locations_filtered.csv";
+const inputFile = "../data/worksheets_ct_data.json";
+const outputFile = "../data/worksheet_ct_filtered.json";
+
 
 function filterRows() {
-    const input = fs.readFileSync(inputFile, "utf8").split("\n");
+    const input = JSON.parse(fs.readFileSync(inputFile, "utf8"));
+    // input: [ [ [ {l, t, d}, ... ] ], ... ]
     const output = [];
-    if (input.length > 0) output.push(input[0]); // header
-
-    for (let i = 1; i < input.length; i++) {
-        const line = input[i].trim();
-        if (!line) continue;
-        const match = line.match(/^"?(\d+)"?,?"?([^"]*)"?$/);
-        if (!match) continue;
-        const locations = match[2].split(",").map(s => s.trim()).filter(Boolean);
-        if (locations.length >= 3 && locations.length <= 7) {
-            output.push(line);
+    for (const worksheet of input) {
+        let total = 0;
+        for (const arr of worksheet) {
+            total += arr.length;
+        }
+        if (total >= 3 && total <= 7) {
+            output.push(worksheet);
         }
     }
-
-    fs.writeFileSync(outputFile, output.join("\n"), "utf8");
+    fs.writeFileSync(outputFile, JSON.stringify(output, null, 2), "utf8");
 }
 
 filterRows();

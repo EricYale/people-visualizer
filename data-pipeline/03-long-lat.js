@@ -11,8 +11,8 @@ async function main() {
         "../data/building_abbreviations.csv",
         "../data/building_abbreviations_manual.csv"
     ];
-    const outputFile = "../data/place_long_lat.csv";
-    const output = ["abbrev,lat,lng"];
+    const outputFile = "../data/place_long_lat.json";
+    const output = {};
     for (const abbrevFile of abbrevFiles) {
         if (!fs.existsSync(abbrevFile)) continue;
         const lines = fs.readFileSync(abbrevFile, "utf8").split("\n").filter(Boolean);
@@ -33,19 +33,19 @@ async function main() {
                 const candidates = response[0].places;
                 if (!candidates || candidates.length === 0 || !candidates[0].location) {
                     console.error(`Could not find long/lat for building: ${abbrev} (${name})`);
-                    output.push(`${abbrev},,`);
+                    output[abbrev] = null;
                     continue;
                 }
                 const loc = candidates[0].location;
-                output.push(`${abbrev},${loc.latitude},${loc.longitude}`);
+                output[abbrev] = [loc.longitude, loc.latitude];
                 console.log(`Fetched long/lat for building: ${abbrev} (${name})`);
             } catch (err) {
                 console.error(`Error fetching long/lat for building: ${abbrev} (${name})`);
-                output.push(`${abbrev},,`);
+                output[abbrev] = null;
             }
         }
     }
-    fs.writeFileSync(outputFile, output.join("\n"), "utf8");
+    fs.writeFileSync(outputFile, JSON.stringify(output, null, 2), "utf8");
 }
 
 main();
