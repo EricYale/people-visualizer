@@ -158,7 +158,8 @@ function initializeDots() {
                 lat: 0,
                 lng: 0
             },
-            latenessFactor: Math.random() * 5,
+            latenessFactor: Math.random() * 5
+            // trail removed
         }
     });
     update();
@@ -213,6 +214,8 @@ function moveDot(dot) {
     const nextNode = dot.path[0];
     if (!nextNode) return;
 
+    // Remove trail logic
+
     const dx = nextNode.lng - dot.lng;
     const dy = nextNode.lat - dot.lat;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -264,7 +267,6 @@ function isAtResidential(dot) {
 }
 
 function getColorForDot(dot) {
-    // If at residential, show dark orange
     if (isAtResidential(dot)) return "#834296ff";
     if(dot.path.length === 0) return "#ff00d0"; // idle
     return "#ff0062"; // moving
@@ -283,9 +285,17 @@ function render() {
         if (dot.lng == null || dot.lat == null) return;
         if(isAtResidential(dot) && !SHOW_DOTS_AT_RESIDENTIAL) return;
         const pixel = map.project([dot.lng + dot.fudgeCoords.lng, dot.lat + dot.fudgeCoords.lat]);
+        ctx.save();
         ctx.beginPath();
         ctx.arc(pixel.x, pixel.y, 5, 0, 2 * Math.PI);
+        if (!isAtResidential(dot)) {
+            ctx.shadowColor = ctx.fillStyle;
+            ctx.shadowBlur = 25;
+        } else {
+            ctx.shadowBlur = 0;
+        }
         ctx.fill();
+        ctx.restore();
     });
 
     map.setPaintProperty("day-night", "background-opacity", Math.min(1, 0.6 * Math.cos((timer.hour + timer.minute / 60) / 24 * 2 * Math.PI)));
